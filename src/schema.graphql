@@ -1,0 +1,67 @@
+type Normativa {
+  ID_Normativa: ID!
+  Codice: String
+  Titolo: String
+  Descrizione: String
+}
+type Controllo {
+  ID_Controllo: ID!
+  Codice: String
+  Nome: String
+  Stato: String
+  CategoriaControllo:[CategoriaControllo]!
+   ID_Categoria: ID! 
+  ID_NormativaRiferimento:ID!
+  Descrizione: String
+   Controllo:[Controllo ]
+   Normativa:[Normativa]
+}
+type CategoriaControllo {
+  ID_Categoria: ID!
+  Nome: String
+  Descrizione: String
+  ID_Normativa:ID!
+  
+}
+
+type MappaRelazione {
+  ID_Relazione: ID!
+  ID_Normativa_Master: ID
+  Normativa_Master: String
+  ID_Normativa_Linked:ID!
+  Normativa_Linked: String
+  Tabella_Mapping: String
+
+  
+}
+
+
+type Listing {
+  id: ID!
+  title: String!
+  numOfBeds: Int
+  costPerNight: Float
+  closedForBookings: Boolean
+  longitude: Float
+  amenities:[Amenity ]
+}
+type Amenity  {
+    id: ID!
+    name: String
+   
+}
+
+type Query {
+ 
+  featuredListings: [Listing!]!
+  listing(id: ID!): Listing
+
+  listNormative:[Normativa!]!
+  listControlli:[Controllo!]!
+  listControlliByNormativa(ID_NormativaRiferimento: ID!): [Controllo]!
+  listMappaByNormative(ID_NormativaMaster:ID!,ID_NormativaLinked: ID!): [MappaRelazione]!
+  listMappaByNormativa(ID_Normativa:ID!): [MappaRelazione]!
+  listMappaControlliByControllo(ID_Controllo: ID!): [Controllo]!
+
+ 
+}
