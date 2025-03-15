@@ -19,7 +19,23 @@ export class ListingAPI extends RESTDataSource {
 
   getListNormative = async (): Promise<Normativa[]> => {
      // Esegui la query e stampa il risultato con then()
-      return pool.query<Normativa>('SELECT * FROM normative')
+      return pool.query<Normativa>(
+        'SELECT  '+
+          ' normative."ID_Normativa" , '+
+          ' normative."Codice", '+
+          ' normative."Descrizione", '+
+          ' normative."Titolo", '+
+          '  COUNT(controlli."ID_Controllo") AS numero_controlli '+
+          '  FROM '+
+          '    normative '+
+          ' LEFT JOIN '+
+          '     controlli  ON controlli."ID_NormativaRiferimento" =normative."ID_Normativa" '+
+          ' GROUP BY '+
+          '     normative."ID_Normativa", '+
+          '     normative."Codice", '+
+          '     normative."Descrizione", '+
+          '     normative."Titolo"; '
+        )
       .then(result => {
         //console.log("Ecco le rows:", result.rows);
         return result.rows;
@@ -44,7 +60,11 @@ export class ListingAPI extends RESTDataSource {
   
   async getListControlliByNormativa(ID_NormativaRiferimento: string): Promise<Controllo[]> {
     // Esegui la query e stampa il risultato con then()
-    return pool.query<Controllo>('SELECT * FROM controlli where "ID_NormativaRiferimento" = '+ID_NormativaRiferimento)
+    return pool.query<Controllo>(
+      ' SELECT CTL.*,categoriecontrollo."Nome" as "CategoriaNome", normative."Codice" as "NormativaCodice" FROM controlli as CTL '+
+      ' left join categoriecontrollo on categoriecontrollo."ID_Categoria"=CTL."ID_Categoria"  '+
+      ' left join normative on normative."ID_Normativa" =CTL."ID_NormativaRiferimento"  '+
+      ' where CTL."ID_NormativaRiferimento" ='+ID_NormativaRiferimento)
     .then(result => {
       //console.log("Ecco le rows:", result.rows);
       return result.rows;
@@ -107,6 +127,18 @@ export class ListingAPI extends RESTDataSource {
 
   async getControlliById(ID_Controllo: string): Promise<Controllo[]> {
     return pool.query<Controllo>(
+      ' SELECT MP."Abilitato" ,CTL.*,categoriecontrollo."Nome" as "CategoriaNome", normative."Codice" as "NormativaCodice" FROM controlli as CTL '+
+      ' left join categoriecontrollo on categoriecontrollo."ID_Categoria"=CTL."ID_Categoria"  '+
+      ' left join normative on normative."ID_Normativa" =CTL."ID_NormativaRiferimento"  '+
+      ' left join mappacontrolli MP  on MP.id_controllo2 = CTL."ID_Controllo"  '+
+      ' where MP.id_controllo1=  '+ID_Controllo+
+      ' union '+
+      ' SELECT MP."Abilitato" ,CTL.*,categoriecontrollo."Nome" as "CategoriaNome", normative."Codice" as "NormativaCodice" FROM controlli as CTL '+
+      ' left join categoriecontrollo on categoriecontrollo."ID_Categoria"=CTL."ID_Categoria"  '+
+      ' left join normative on normative."ID_Normativa" =CTL."ID_NormativaRiferimento"  '+
+      ' left join mappacontrolli MP  on MP.id_controllo1 = CTL."ID_Controllo"  '+
+      ' where MP.id_controllo2=  '+ID_Controllo
+/*
           'SELECT * FROM controlli CR inner join mappacontrolli MP '+
           ' on MP.id_controllo2 = CR."ID_Controllo" '+
           ' where '+
@@ -116,6 +148,7 @@ export class ListingAPI extends RESTDataSource {
           ' on MP.id_controllo1 = CR."ID_Controllo" '+
           ' where  '+
           ' MP.id_controllo2= '+ID_Controllo
+*/
     )
     .then(result => {
       //console.log("Ecco le rows:", result.rows);

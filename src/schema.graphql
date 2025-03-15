@@ -3,6 +3,7 @@ type Normativa {
   Codice: String
   Titolo: String
   Descrizione: String
+  numero_controlli: Int
 }
 type Controllo {
   ID_Controllo: ID!
@@ -10,11 +11,14 @@ type Controllo {
   Nome: String
   Stato: String
   CategoriaControllo:[CategoriaControllo]!
-   ID_Categoria: ID! 
+  ID_Categoria: ID! 
   ID_NormativaRiferimento:ID!
   Descrizione: String
-   Controllo:[Controllo ]
-   Normativa:[Normativa]
+  Controllo:[Controllo ]
+  Normativa:[Normativa]
+  Abilitato:Boolean
+  CategoriaNome:String
+  NormativaCodice:String
 }
 type CategoriaControllo {
   ID_Categoria: ID!
@@ -64,4 +68,11 @@ type Query {
   listMappaControlliByControllo(ID_Controllo: ID!): [Controllo]!
 
  
+}
+type Mutation {
+  updateMappaControlli(id: ID!): updateMappaControlli!
+
+}
+type updateMappaControlli {
+
 }
