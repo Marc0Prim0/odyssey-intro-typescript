@@ -1,6 +1,7 @@
 import { RESTDataSource } from "@apollo/datasource-rest";
-import { Listing, Amenity,Normativa,Controllo, CategoriaControllo,MappaRelazione } from "../types";
+import { Listing, Amenity,Normativa,Controllo, CategoriaControllo,MappaRelazione,MappaControllo } from "../types";
 import pool from '../db';  // Percorso relativo al file db.ts
+import { log } from "console";
 
 
 export class ListingAPI extends RESTDataSource {
@@ -172,6 +173,67 @@ export class ListingAPI extends RESTDataSource {
       console.error("Error fetching categorie:", error);
       throw error;
     });
+  }
+  async patchMappaControllo(ID_Controllo1:string, ID_Controllo2:string, Abilitato: boolean) {
+    console.log('patchMappaControllo fetching input:', Abilitato);
+    try {
+      let query = 'UPDATE mappacontrolli SET "Abilitato" = $3 WHERE id_controllo1 = $1 AND id_controllo2 = $2 RETURNING *';
+      const values = [ID_Controllo1, ID_Controllo2, Abilitato];
+  
+      const result = await pool.query(query, values);
+  
+      if (result.rows.length === 0) {
+        console.log('null');
+        return null;
+      }
+      console.log('RESULT=',result.rows[0]);
+      const row = result.rows[0];
+      return {
+       
+        ID_Controllo1: row.id_controllo1, // Mappa id_controllo1 a ID_Controllo1
+        ID_Controllo2: row.id_controllo2, // Mappa id_controllo2 a ID_Controllo2
+        Abilitato: row.Abilitato,
+        ID_Mappa: row.id_mappa, // Assicurati che questo campo sia mappato correttamente
+      }
+    } catch (error) {
+      console.error(
+        'Errore durante l\'aggiornamento di MappaControlli nel database:',
+        error
+      );
+      throw error;
+    }
+  
+
+
+
+
+
+    /*
+    try {
+      let query = 'UPDATE mappacontrolli SET Abilitato=1 ';
+     // const values = [];
+    
+     
+      query = query.slice(0, -2);
+      query += ' WHERE id_controllo1 = '+ID_Controllo1+' AND id_controllo2 = '+ID_Controllo2 ;
+     // values.push(ID_Controllo1, ID_Controllo2);
+     console.log('query= ',query);
+
+      const result = await pool.query(query);
+
+      if (result.rows.length === 0) {
+        return null;
+      }
+
+      return result.rows[0];
+    } catch (error) {
+      console.error(
+        'Errore durante l\'aggiornamento di MappaControllo nel database:',
+        error
+      );
+      throw error;
+    }
+      */
   }
 
 }

@@ -38,6 +38,13 @@ type MappaRelazione {
 
   
 }
+type MappaControllo {
+  ID_Mappa:ID
+  ID_Controllo1: ID!
+  ID_Controllo2: ID!
+  Abilitato: Boolean!
+  
+}
 
 
 type Listing {
@@ -54,6 +61,13 @@ type Amenity  {
     name: String
    
 }
+type Mutation {
+  updateAbilitatoMappaControllo(
+    ID_Controllo1: ID!
+    ID_Controllo2: ID!
+    Abilitato: Boolean!
+  ): MappaControllo
+}
 
 type Query {
  
@@ -68,11 +82,4 @@ type Query {
   listMappaControlliByControllo(ID_Controllo: ID!): [Controllo]!
 
  
-}
-type Mutation {
-  updateMappaControlli(id: ID!): updateMappaControlli!
-
-}
-type updateMappaControlli {
-
 }

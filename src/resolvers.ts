@@ -61,5 +61,37 @@ export const resolvers: Resolvers = {
           return dataSources.listingAPI.getAmenities(id);
         }
     },
+    Mutation: {
+      updateAbilitatoMappaControllo: async (
+        _,
+        { ID_Controllo1, ID_Controllo2, Abilitato },
+        { dataSources }
+      ) => {
+        try {
+          console.log('Abilitato= ',Abilitato);
+          const mappaControlloAggiornata =
+            await dataSources.listingAPI.patchMappaControllo(
+              ID_Controllo1,
+              ID_Controllo2,
+              Abilitato
+            );
+          if (!mappaControlloAggiornata) {
+            throw new Error("MappaControlli non trovata.");
+          }
+          return {
+            ID_Controllo1: mappaControlloAggiornata.ID_Controllo1,
+            ID_Controllo2: mappaControlloAggiornata.ID_Controllo2,
+            Abilitato: mappaControlloAggiornata.Abilitato,
+            ID_Mappa: mappaControlloAggiornata.ID_Mappa, // Correzione qui
+          };
+        } catch (error) {
+          console.error(
+            "Errore durante l'aggiornamento di MappaControllo:",
+            error
+          );
+          throw error;
+        }
+      },
+    },
     
-  };
+};
