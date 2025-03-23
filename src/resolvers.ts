@@ -22,21 +22,27 @@ export const resolvers: Resolvers = {
           return result;
         },
         listControlliByNormativa: async (_, { ID_NormativaRiferimento }, { dataSources }) => {
-          console.log('Resolver->ID_NormativaRiferimento:', ID_NormativaRiferimento); // Log del parametro
+         // console.log('Resolver->ID_NormativaRiferimento:', ID_NormativaRiferimento); // Log del parametro
           return await dataSources.listingAPI.getListControlliByNormativa(ID_NormativaRiferimento);
         },
         listMappaControlliByControllo: async (_, { ID_Controllo }, { dataSources }) => {
-          console.log('Resolver->ID_NormativaRiferimento:', ID_Controllo); // Log del parametro
+         // console.log('Resolver->ID_NormativaRiferimento:', ID_Controllo); // Log del parametro
           return await dataSources.listingAPI.getControlliById(ID_Controllo);
         },
         listMappaByNormative: async (_, { ID_NormativaMaster,ID_NormativaLinked}, { dataSources }) => {
-          console.log('Resolver->ID_NormativaMaster:', ID_NormativaMaster); // Log del parametro
+         // console.log('Resolver->ID_NormativaMaster:', ID_NormativaMaster); // Log del parametro
           return await dataSources.listingAPI.getListMappaByNormative(ID_NormativaMaster,ID_NormativaLinked);
         },
         listMappaByNormativa: async (_, { ID_Normativa}, { dataSources }) => {
-          console.log('Resolver->ID_Normativa:', ID_Normativa); // Log del parametro
+         // console.log('Resolver->ID_Normativa:', ID_Normativa); // Log del parametro
           return await dataSources.listingAPI.getListMappaByNormativa(ID_Normativa);
+        },  
+        listMappaControlliByControlloByNormativa: async (_, {ID_Controllo, ID_Normativa}, { dataSources }) => {
+          console.log('Resolver->ID_Normativa:', ID_Normativa); // Log del parametro
+          return await dataSources.listingAPI.getListControlliByNormativaControllo(ID_Controllo,ID_Normativa);
         },   
+
+       
            
     },
     Controllo: {

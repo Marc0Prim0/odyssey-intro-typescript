@@ -177,7 +177,8 @@ export class ListingAPI extends RESTDataSource {
   async patchMappaControllo(ID_Controllo1:string, ID_Controllo2:string, Abilitato: boolean) {
     console.log('patchMappaControllo fetching input:', Abilitato);
     try {
-      let query = 'UPDATE mappacontrolli SET "Abilitato" = $3 WHERE id_controllo1 = $1 AND id_controllo2 = $2 RETURNING *';
+      let query = 'UPDATE mappacontrolli SET "Abilitato" = $3 '+
+      ' WHERE (id_controllo1 = $1 OR id_controllo1 = $2)  AND (id_controllo2 = $2 OR id_controllo2 = $1) RETURNING *';
       const values = [ID_Controllo1, ID_Controllo2, Abilitato];
   
       const result = await pool.query(query, values);
@@ -204,36 +205,34 @@ export class ListingAPI extends RESTDataSource {
     }
   
 
+  }
 
+  async getListControlliByNormativaControllo(ID_Controllo: string,ID_Normativa: string): Promise<Controllo[]> {
 
-
-
-    /*
-    try {
-      let query = 'UPDATE mappacontrolli SET Abilitato=1 ';
-     // const values = [];
-    
-     
-      query = query.slice(0, -2);
-      query += ' WHERE id_controllo1 = '+ID_Controllo1+' AND id_controllo2 = '+ID_Controllo2 ;
-     // values.push(ID_Controllo1, ID_Controllo2);
-     console.log('query= ',query);
-
-      const result = await pool.query(query);
-
-      if (result.rows.length === 0) {
-        return null;
-      }
-
-      return result.rows[0];
-    } catch (error) {
-      console.error(
-        'Errore durante l\'aggiornamento di MappaControllo nel database:',
-        error
-      );
-      throw error;
-    }
-      */
+  
+     try {
+       let query = 
+      ' SELECT '+
+      ' MP."Abilitato" , '+
+      ' CTL.*, '+
+     '  normative."Codice" as "NormativaCodice"  '+
+     '  FROM controlli as CTL  '+
+     '  inner join normative on ( normative."ID_Normativa" =CTL."ID_NormativaRiferimento")   '+
+     '  left join mappacontrolli MP  on MP.id_controllo1 = CTL."ID_Controllo"    '+
+      ' and (MP.id_controllo1=  $1 or MP.id_controllo2=  $1)  '+
+     ' where CTL."ID_NormativaRiferimento" =$2 ';
+       const values = [ID_Controllo, , ID_Normativa];
+   
+       const result = await pool.query(query, values);
+         
+       return  result.rows;
+     } catch (error) {
+       console.error(
+         'Errore durante l\'aggiornamento di MappaControlli nel database:',
+         error
+       );
+       throw error;
+     }
   }
 
 }
