@@ -61,12 +61,27 @@ type Amenity  {
     name: String
    
 }
+type SuccessResponse {
+  success: Boolean!
+  message: String
+  id: ID
+}
 type Mutation {
   updateAbilitatoMappaControllo(
     ID_Controllo1: ID!
     ID_Controllo2: ID!
     Abilitato: Boolean!
   ): MappaControllo
+  deleteAssociazioneMappaControllo(
+    ID_Controllo1: ID!
+    ID_Controllo2: ID!
+    Abilitato: Boolean!
+  ): SuccessResponse!
+   insertAssociazioneMappaControllo(
+    ID_Controllo1: ID!
+    ID_Controllo2: ID!
+    Abilitato: Boolean!
+  ): SuccessResponse!
 }
 
 type Query {

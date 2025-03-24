@@ -38,7 +38,7 @@ export const resolvers: Resolvers = {
           return await dataSources.listingAPI.getListMappaByNormativa(ID_Normativa);
         },  
         listMappaControlliByControlloByNormativa: async (_, {ID_Controllo, ID_Normativa}, { dataSources }) => {
-          console.log('Resolver->ID_Normativa:', ID_Normativa); // Log del parametro
+          console.log('Resolver->ID_Normativa:'+ ID_Normativa+', ID_Controllo:'+ID_Controllo); // Log del parametro
           return await dataSources.listingAPI.getListControlliByNormativaControllo(ID_Controllo,ID_Normativa);
         },   
 
@@ -68,11 +68,38 @@ export const resolvers: Resolvers = {
         }
     },
     Mutation: {
-      updateAbilitatoMappaControllo: async (
-        _,
-        { ID_Controllo1, ID_Controllo2, Abilitato },
-        { dataSources }
-      ) => {
+      insertAssociazioneMappaControllo: async ( _,{ ID_Controllo1, ID_Controllo2, Abilitato },   { dataSources }   ) => {
+          try {
+               
+            const result = await dataSources.listingAPI.insertMappaControllo( ID_Controllo1, ID_Controllo2, Abilitato);
+    
+            if (result && result.id) { // Assumi che la funzione di inserimento restituisca l'ID del nuovo elemento
+              return { success: true, id: result.id, message: 'Associazione mappa controllo inserita con successo.' };
+            } else {
+              return { success: false, message: 'Errore durante l\'inserimento della mappa controllo.' };
+            }
+          } catch (error) {
+            console.error(
+              'Errore durante l\'inserimento della mappa controllo nel database:',
+              error
+            );
+            return { success: false, message: error.message };
+          }
+        
+      },
+      deleteAssociazioneMappaControllo: async (_, { ID_Controllo1,ID_Controllo2,Abilitato }, { dataSources }) => {
+        try {
+          console.log('ID_Controllo1,ID_Controllo2,Abilitato= '+ID_Controllo1+', '+ID_Controllo2+', '+Abilitato);
+          // Logica per eliminare la riga dal database utilizzando l'ID fornito
+          const success = 
+          await dataSources.listingAPI.deleteAssociazioneControlli(ID_Controllo1,ID_Controllo2,Abilitato);
+          return { success: success  };
+        } catch (error) {
+          console.error('Errore durante l\'eliminazione della riga:', error);
+          return {  success: false };
+        }
+      },
+      updateAbilitatoMappaControllo: async ( _,  { ID_Controllo1, ID_Controllo2, Abilitato },   { dataSources }  ) => {
         try {
           console.log('Abilitato= ',Abilitato);
           const mappaControlloAggiornata =

@@ -187,7 +187,7 @@ export class ListingAPI extends RESTDataSource {
         console.log('null');
         return null;
       }
-      console.log('RESULT=',result.rows[0]);
+     // console.log('RESULT=',result.rows[0]);
       const row = result.rows[0];
       return {
        
@@ -207,21 +207,68 @@ export class ListingAPI extends RESTDataSource {
 
   }
 
+  async insertMappaControllo(ID_Controllo1:string, ID_Controllo2:string, Abilitato: boolean): Promise<{ id: string } | null> {
+    try {
+      const result = await pool.query(
+        'INSERT INTO mappacontrolli (id_controllo1, id_controllo2, "Abilitato") VALUES ($1, $2, $3) RETURNING id_mappa',
+        [ID_Controllo1, ID_Controllo2, Abilitato]
+      );
+      if (result.rows && result.rows.length > 0) {
+        return { id: result.rows[0].id_mappa }; // Restituisce l'ID del nuovo elemento
+      }
+      return null;
+    } catch (error) {
+      console.error('Errore durante l\'inserimento in mappacontrolli:', error);
+      throw error; // Rilancia l'errore
+    }
+  }
+  
+  async deleteAssociazioneControlli(ID_Controllo1:string, ID_Controllo2:string, Abilitato: boolean) : Promise<boolean>{
+    console.log('deleteAssociazioneControlli fetching input:', Abilitato);
+    try {
+      let query = 'delete from mappacontrolli where ( (id_controllo1 = $1 and  id_controllo2 = $2) or  (id_controllo2 = $1 and  id_controllo1 = $2)) and "Abilitato"=$3 ';
+     // ' WHERE (id_controllo1 = $1 OR id_controllo1 = $2)  AND (id_controllo2 = $2 OR id_controllo2 = $1) RETURNING *';
+      const values = [ID_Controllo1, ID_Controllo2, Abilitato];
+  
+      const result = await pool.query(query, values);
+  
+      if (result.rowCount === 0) {
+        console.log('result.rowCount ' , false);
+        return false;
+      }
+    
+   
+      return  true;
+      
+    } catch (error) {
+      console.error(
+        'Errore durante la cancellazione di MappaControlli nel database:',
+        error
+      );
+      throw error;
+    }
+  
+
+  }
+
   async getListControlliByNormativaControllo(ID_Controllo: string,ID_Normativa: string): Promise<Controllo[]> {
 
   
+    console.log('getListControlliByNormativaControllo...')
      try {
        let query = 
       ' SELECT '+
       ' MP."Abilitato" , '+
       ' CTL.*, '+
-     '  normative."Codice" as "NormativaCodice"  '+
+     '  normative."Codice" as "NormativaCodice",  '+
+     '  CTL.*,categoriecontrollo."Nome" as "CategoriaNome" '+
      '  FROM controlli as CTL  '+
      '  inner join normative on ( normative."ID_Normativa" =CTL."ID_NormativaRiferimento")   '+
-     '  left join mappacontrolli MP  on MP.id_controllo1 = CTL."ID_Controllo"    '+
+     ' inner join categoriecontrollo on ( categoriecontrollo."ID_Categoria"  =CTL."ID_Categoria")  '+
+      '  left join mappacontrolli MP  on  (MP.id_controllo1 = CTL."ID_Controllo" or  MP.id_controllo2 = CTL."ID_Controllo")    '+
       ' and (MP.id_controllo1=  $1 or MP.id_controllo2=  $1)  '+
      ' where CTL."ID_NormativaRiferimento" =$2 ';
-       const values = [ID_Controllo, , ID_Normativa];
+       const values = [ID_Controllo,  ID_Normativa];
    
        const result = await pool.query(query, values);
          
