@@ -67,7 +67,7 @@ export class ListingAPI extends RESTDataSource {
       ' left join normative on normative."ID_Normativa" =CTL."ID_NormativaRiferimento"  '+
       ' where CTL."ID_NormativaRiferimento" ='+ID_NormativaRiferimento)
     .then(result => {
-      //console.log("Ecco le rows:", result.rows);
+      console.log("Ecco le rows:", result.rows);
       return result.rows;
     })
     .catch(error => {
@@ -161,7 +161,7 @@ export class ListingAPI extends RESTDataSource {
     });
   }
   async getNormativaById(ID_Normativa: string): Promise<Normativa[]> {
-    console.log("getNormativaById fetching ID_Normativa:", ID_Normativa);
+   // console.log("getNormativaById fetching ID_Normativa:", ID_Normativa);
     return pool.query<Normativa>(
           'SELECT * FROM normative Where "ID_Normativa"='+ID_Normativa
     )
@@ -175,7 +175,7 @@ export class ListingAPI extends RESTDataSource {
     });
   }
   async patchMappaControllo(ID_Controllo1:string, ID_Controllo2:string, Abilitato: boolean) {
-    console.log('patchMappaControllo fetching input:', Abilitato);
+   // console.log('patchMappaControllo fetching input:', Abilitato);
     try {
       let query = 'UPDATE mappacontrolli SET "Abilitato" = $3 '+
       ' WHERE (id_controllo1 = $1 OR id_controllo1 = $2)  AND (id_controllo2 = $2 OR id_controllo2 = $1) RETURNING *';
@@ -207,24 +207,41 @@ export class ListingAPI extends RESTDataSource {
 
   }
 
-  async insertMappaControllo(ID_Controllo1:string, ID_Controllo2:string, Abilitato: boolean): Promise<{ id: string } | null> {
+  async insertMappaControllo(ID_Controllo1:string, ID_Controllo2:string, Abilitato: boolean) {
     try {
-      const result = await pool.query(
-        'INSERT INTO mappacontrolli (id_controllo1, id_controllo2, "Abilitato") VALUES ($1, $2, $3) RETURNING id_mappa',
-        [ID_Controllo1, ID_Controllo2, Abilitato]
-      );
-      if (result.rows && result.rows.length > 0) {
-        return { id: result.rows[0].id_mappa }; // Restituisce l'ID del nuovo elemento
+      let query =  'INSERT INTO mappacontrolli (id_controllo1, id_controllo2, "Abilitato") VALUES ($1, $2, $3) RETURNING id_mappa';
+      const values = [ID_Controllo1, ID_Controllo2, Abilitato];
+
+
+      const result = await pool.query(query, values);
+  
+      if (result.rows.length === 0) {
+        console.log('null');
+        return null;
       }
-      return null;
+     // console.log('RESULT=',result.rows[0]);
+      const row = result.rows[0];
+     // console.log('ID_Controllo1,ID_Controllo2,ID_Mappa= '+row.id_controllo1+', '+row.id_controllo2+', '+row.id_mappa);
+      return {
+       
+        ID_Controllo1: ID_Controllo1, // Mappa id_controllo1 a ID_Controllo1
+        ID_Controllo2: ID_Controllo2, // Mappa id_controllo2 a ID_Controllo2
+        Abilitato: true,
+        ID_Mappa: row.id_mappa, // Assicurati che questo campo sia mappato correttamente
+      
+      }
+
     } catch (error) {
-      console.error('Errore durante l\'inserimento in mappacontrolli:', error);
-      throw error; // Rilancia l'errore
+      console.error(
+        'Errore durante l\'aggiornamento di MappaControlli nel database:',
+        error
+      );
+      throw error;
     }
   }
   
   async deleteAssociazioneControlli(ID_Controllo1:string, ID_Controllo2:string, Abilitato: boolean) : Promise<boolean>{
-    console.log('deleteAssociazioneControlli fetching input:', Abilitato);
+    //onsole.log('deleteAssociazioneControlli fetching input:', Abilitato);
     try {
       let query = 'delete from mappacontrolli where ( (id_controllo1 = $1 and  id_controllo2 = $2) or  (id_controllo2 = $1 and  id_controllo1 = $2)) and "Abilitato"=$3 ';
      // ' WHERE (id_controllo1 = $1 OR id_controllo1 = $2)  AND (id_controllo2 = $2 OR id_controllo2 = $1) RETURNING *';
@@ -271,7 +288,7 @@ export class ListingAPI extends RESTDataSource {
        const values = [ID_Controllo,  ID_Normativa];
    
        const result = await pool.query(query, values);
-         
+       console.log('getListControlliByNormativaControllo... result.row', result.rows);
        return  result.rows;
      } catch (error) {
        console.error(

@@ -77,11 +77,11 @@ type Mutation {
     ID_Controllo2: ID!
     Abilitato: Boolean!
   ): SuccessResponse!
-   insertAssociazioneMappaControllo(
+  insertAssociazioneMappaControllo(
     ID_Controllo1: ID!
     ID_Controllo2: ID!
     Abilitato: Boolean!
-  ): SuccessResponse!
+  ): MappaControllo!
 }
 
 type Query {
@@ -92,6 +92,7 @@ type Query {
   listNormative:[Normativa!]!
   listControlli:[Controllo!]!
   listControlliByNormativa(ID_NormativaRiferimento: ID!): [Controllo]!
+  listControlliByNormativaDeep(ID_NormativaRiferimento: ID!,includeDeep:Boolean!,includeDesc:Boolean!): [Controllo]!
   listMappaByNormative(ID_NormativaMaster:ID!,ID_NormativaLinked: ID!): [MappaRelazione]!
   listMappaByNormativa(ID_Normativa:ID!): [MappaRelazione]!
   listMappaControlliByControllo(ID_Controllo: ID!): [Controllo]!

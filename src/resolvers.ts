@@ -22,23 +22,27 @@ export const resolvers: Resolvers = {
           return result;
         },
         listControlliByNormativa: async (_, { ID_NormativaRiferimento }, { dataSources }) => {
-         // console.log('Resolver->ID_NormativaRiferimento:', ID_NormativaRiferimento); // Log del parametro
+          console.log('Resolver->listControlliByNormativa->ID_NormativaRiferimento:', ID_NormativaRiferimento); // Log del parametro
+          return await dataSources.listingAPI.getListControlliByNormativa(ID_NormativaRiferimento);
+        },
+        listControlliByNormativaDeep: async (_, { ID_NormativaRiferimento ,includeDeep,includeDesc}, { dataSources }) => {
+          console.log('Resolver->listControlliByNormativa->ID_NormativaRiferimento:', ID_NormativaRiferimento); // Log del parametro
           return await dataSources.listingAPI.getListControlliByNormativa(ID_NormativaRiferimento);
         },
         listMappaControlliByControllo: async (_, { ID_Controllo }, { dataSources }) => {
-         // console.log('Resolver->ID_NormativaRiferimento:', ID_Controllo); // Log del parametro
+          console.log('Resolver->listMappaControlliByControllo->ID_NormativaRiferimento:', ID_Controllo); // Log del parametro
           return await dataSources.listingAPI.getControlliById(ID_Controllo);
         },
         listMappaByNormative: async (_, { ID_NormativaMaster,ID_NormativaLinked}, { dataSources }) => {
-         // console.log('Resolver->ID_NormativaMaster:', ID_NormativaMaster); // Log del parametro
+          console.log('Resolver->listMappaByNormative->ID_NormativaMaster:', ID_NormativaMaster); // Log del parametro
           return await dataSources.listingAPI.getListMappaByNormative(ID_NormativaMaster,ID_NormativaLinked);
         },
         listMappaByNormativa: async (_, { ID_Normativa}, { dataSources }) => {
-         // console.log('Resolver->ID_Normativa:', ID_Normativa); // Log del parametro
+          console.log('Resolver->listMappaByNormativa->ID_Normativa:', ID_Normativa); // Log del parametro
           return await dataSources.listingAPI.getListMappaByNormativa(ID_Normativa);
         },  
         listMappaControlliByControlloByNormativa: async (_, {ID_Controllo, ID_Normativa}, { dataSources }) => {
-          console.log('Resolver->ID_Normativa:'+ ID_Normativa+', ID_Controllo:'+ID_Controllo); // Log del parametro
+          console.log('Resolver->listMappaControlliByControlloByNormativa->ID_Normativa:'+ ID_Normativa+', ID_Controllo:'+ID_Controllo); // Log del parametro
           return await dataSources.listingAPI.getListControlliByNormativaControllo(ID_Controllo,ID_Normativa);
         },   
 
@@ -68,40 +72,36 @@ export const resolvers: Resolvers = {
         }
     },
     Mutation: {
-      insertAssociazioneMappaControllo: async ( _,{ ID_Controllo1, ID_Controllo2, Abilitato },   { dataSources }   ) => {
-          try {
-               
-            const result = await dataSources.listingAPI.insertMappaControllo( ID_Controllo1, ID_Controllo2, Abilitato);
-    
-            if (result && result.id) { // Assumi che la funzione di inserimento restituisca l'ID del nuovo elemento
-              return { success: true, id: result.id, message: 'Associazione mappa controllo inserita con successo.' };
-            } else {
-              return { success: false, message: 'Errore durante l\'inserimento della mappa controllo.' };
-            }
-          } catch (error) {
-            console.error(
-              'Errore durante l\'inserimento della mappa controllo nel database:',
-              error
-            );
-            return { success: false, message: error.message };
-          }
-        
-      },
-      deleteAssociazioneMappaControllo: async (_, { ID_Controllo1,ID_Controllo2,Abilitato }, { dataSources }) => {
+      insertAssociazioneMappaControllo: async ( _,{ ID_Controllo1, ID_Controllo2 },   { dataSources }   ) => {
         try {
-          console.log('ID_Controllo1,ID_Controllo2,Abilitato= '+ID_Controllo1+', '+ID_Controllo2+', '+Abilitato);
-          // Logica per eliminare la riga dal database utilizzando l'ID fornito
-          const success = 
-          await dataSources.listingAPI.deleteAssociazioneControlli(ID_Controllo1,ID_Controllo2,Abilitato);
-          return { success: success  };
+               
+            const mappaControlloAggiornata = 
+              await dataSources.listingAPI.insertMappaControllo(
+                ID_Controllo1,
+                ID_Controllo2,
+                true
+              );
+              if (!mappaControlloAggiornata) {
+                throw new Error("MappaControlli non inserita.");
+              }
+              return {
+                ID_Controllo1: mappaControlloAggiornata.ID_Controllo1,
+                ID_Controllo2: mappaControlloAggiornata.ID_Controllo2,
+                Abilitato: mappaControlloAggiornata.Abilitato,
+                ID_Mappa: mappaControlloAggiornata.ID_Mappa, // Correzione qui
+              };
         } catch (error) {
-          console.error('Errore durante l\'eliminazione della riga:', error);
-          return {  success: false };
+            console.error(
+                "Errore durante l'inserimento di MappaControllo:",
+                error
+            );
+           throw error;
         }
+        
       },
       updateAbilitatoMappaControllo: async ( _,  { ID_Controllo1, ID_Controllo2, Abilitato },   { dataSources }  ) => {
         try {
-          console.log('Abilitato= ',Abilitato);
+         
           const mappaControlloAggiornata =
             await dataSources.listingAPI.patchMappaControllo(
               ID_Controllo1,
@@ -125,6 +125,19 @@ export const resolvers: Resolvers = {
           throw error;
         }
       },
+      deleteAssociazioneMappaControllo: async (_, { ID_Controllo1,ID_Controllo2,Abilitato }, { dataSources }) => {
+        try {
+          console.log('ID_Controllo1,ID_Controllo2,Abilitato= '+ID_Controllo1+', '+ID_Controllo2+', '+Abilitato);
+          // Logica per eliminare la riga dal database utilizzando l'ID fornito
+          const success = 
+          await dataSources.listingAPI.deleteAssociazioneControlli(ID_Controllo1,ID_Controllo2,Abilitato);
+          return { success: success  };
+        } catch (error) {
+          console.error('Errore durante l\'eliminazione della riga:', error);
+          return {  success: false };
+        }
+      },
+    
     },
     
 };
