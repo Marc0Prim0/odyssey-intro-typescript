@@ -24,9 +24,11 @@
     "@apollo/datasource-rest": "^6.4.1",
     "@apollo/server": "^4.11.3",
     "@parcel/watcher": "^2.4.0",
+    "bert-tokenizer": "^1.1.8",
     "dotenv": "^16.4.7",
     "graphql": "^16.10.0",
     "graphql-tag": "^2.12.6",
+    "onnxruntime-node": "^1.21.0",
     "pg": "^8.13.3"
   },
   "devDependencies": {

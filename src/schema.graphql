@@ -85,6 +85,8 @@ type Mutation {
 }
 
 type Query {
+
+  predict(inputData:[String]!): Float!
  
   featuredListings: [Listing!]!
   listing(id: ID!): Listing

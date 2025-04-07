@@ -5,6 +5,7 @@ import path from "path";
 import { gql } from "graphql-tag";
 import { resolvers } from "./resolvers";
 import { ListingAPI } from "./datasources/listing-api";
+import * as ort from "onnxruntime-node";
 
 const typeDefs = gql(
   readFileSync(path.resolve(__dirname, "./schema.graphql"), {
@@ -13,11 +14,15 @@ const typeDefs = gql(
 );
 
 async function startApolloServer() {
+
+
   const server = new ApolloServer({ typeDefs, resolvers });
   const { url } = await startStandaloneServer(server, {
     context: async () => {
+     
       const { cache } = server;
       return {
+      
         dataSources: {
           listingAPI: new ListingAPI({ cache }),
         },

@@ -67,7 +67,7 @@ export class ListingAPI extends RESTDataSource {
       ' left join normative on normative."ID_Normativa" =CTL."ID_NormativaRiferimento"  '+
       ' where CTL."ID_NormativaRiferimento" ='+ID_NormativaRiferimento)
     .then(result => {
-      console.log("Ecco le rows:", result.rows);
+      //console.log("Ecco le rows:", result.rows);
       return result.rows;
     })
     .catch(error => {
@@ -288,7 +288,7 @@ export class ListingAPI extends RESTDataSource {
        const values = [ID_Controllo,  ID_Normativa];
    
        const result = await pool.query(query, values);
-       console.log('getListControlliByNormativaControllo... result.row', result.rows);
+       //console.log('getListControlliByNormativaControllo... result.row', result.rows);
        return  result.rows;
      } catch (error) {
        console.error(
