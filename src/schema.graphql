@@ -61,6 +61,12 @@ type Amenity  {
     name: String
    
 }
+
+type Analisi {
+  verbi: [String]
+  soggetti: [String]
+}
+
 type SuccessResponse {
   success: Boolean!
   message: String
@@ -81,10 +87,14 @@ type Mutation {
     ID_Controllo1: ID!
     ID_Controllo2: ID!
     Abilitato: Boolean!
+    Affinita: String!
   ): MappaControllo!
 }
 
 type Query {
+
+  analizzaFrase(testo: String!): [Analisi]
+
 
   predict(inputData:[String]!): Float!
  

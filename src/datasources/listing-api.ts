@@ -207,10 +207,10 @@ export class ListingAPI extends RESTDataSource {
 
   }
 
-  async insertMappaControllo(ID_Controllo1:string, ID_Controllo2:string, Abilitato: boolean) {
+  async insertMappaControllo(ID_Controllo1:string, ID_Controllo2:string, Abilitato: boolean,Affinita:string) {
     try {
-      let query =  'INSERT INTO mappacontrolli (id_controllo1, id_controllo2, "Abilitato") VALUES ($1, $2, $3) RETURNING id_mappa';
-      const values = [ID_Controllo1, ID_Controllo2, Abilitato];
+      let query =  'INSERT INTO mappacontrolli (id_controllo1, id_controllo2, "Abilitato","Affinita") VALUES ($1, $2, $3, $4) RETURNING id_mappa';
+      const values = [ID_Controllo1, ID_Controllo2, Abilitato,parseFloat(Affinita)];
 
 
       const result = await pool.query(query, values);

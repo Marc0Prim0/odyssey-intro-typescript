@@ -5,6 +5,14 @@ import * as ort from 'onnxruntime-node';  // Importa ONNX Runtime
 import { QueryResolvers } from "./types"; // Assicurati di avere il tipo QueryResolvers
 import { DataSourceContext } from "./context";
 //import {BertTokenizer} from "bert-tokenizer";
+const fetch = require('node-fetch'); // Assicurati di aver installato node-fetch
+
+
+const basePython3URL = "http://localhost:5001"; // Assicurati che sia l'URL corretto per il tuo microservizio Python
+
+
+
+
 let model: ort.InferenceSession | null = null;
 
 // Funzione per caricare il modello ONNX
@@ -27,14 +35,14 @@ const cosineSimilarity = (vecA: number[], vecB: number[]): number => {
   return dotProduct / (normA * normB);
 };
 
-const max_length = 200;
+//const max_length = 200;
 const pad = (arr: number[], maxLength: number) => {
     while (arr.length < maxLength) arr.push(0);
     return arr;
 };
 
 // Tokenizzazione con padding
-const tokenizer = (text: string) => {
+const tokenizer = (text: string,max_length:number) => {
   let tokens = [101, ...text.split(' ').map(word => word.length), 102];
   tokens = pad(tokens, max_length);
 
@@ -45,8 +53,9 @@ const tokenizer = (text: string) => {
   };
 };
 
-const prepareFeeds = (text: string) => {
-  const { input_ids, attention_mask, token_type_ids } = tokenizer(text);
+const prepareFeeds = (text: string,max_length:number) => {
+
+  const { input_ids, attention_mask, token_type_ids } = tokenizer(text,max_length);
 
   // Aggiungi la dimensione batch (rango 2)
   const batchInputIds = [input_ids];
@@ -71,8 +80,8 @@ const tokenTypeIdsTensor = new ort.Tensor('int64', BigInt64Array.from(flattenedT
   };
 };
 
-const getEmbedding = async (text: string): Promise<number[]> => {
-  const feeds = prepareFeeds(text);  // Assicurati che questa funzione restituisca i giusti feeds
+const getEmbedding = async (text: string,max_length:number): Promise<number[]> => {
+  const feeds = prepareFeeds(text,max_length);  // Assicurati che questa funzione restituisca i giusti feeds
   const results = await model.run(feeds); // Chiamata al modello ONNX
   
   const embedding:any = results[model.outputNames[0]].data; // Ottieni l'output dal modello
@@ -83,8 +92,9 @@ const getEmbedding = async (text: string): Promise<number[]> => {
 // Funzione per confrontare due testi e restituire un codice di affinità
 const compareTexts = async (text1: string, text2: string): Promise<number> => {
   try {
-    const embedding1 = await getEmbedding(text1);
-    const embedding2 = await getEmbedding(text2);
+    const max_length = Math.max(text1.length, text2.length);
+    const embedding1 = await getEmbedding(text1,max_length);
+    const embedding2 = await getEmbedding(text2,max_length);
  
     console.log(embedding1.length, embedding2.length);
     console.log(embedding1.some(isNaN), embedding2.some(isNaN));
@@ -104,6 +114,10 @@ loadModel();
 
 export const resolvers: Resolvers = {
     Query: {
+      analizzaFrase: async (_: any, { testo }: { testo: string }, { dataSources }: any) => {
+          return await dataSources.pythonAPI.analizzaTesto(testo);
+        },
+
         // Nuovo resolver per la predizione ONNX
         predict: async (_, { inputData }: {  inputData: string[] }, context: DataSourceContext): Promise<number> => {
           if (!model) {
@@ -112,14 +126,15 @@ export const resolvers: Resolvers = {
           }else{
          
             console.log('Numero di stringhe in input', inputData.length);
-            console.log('Testo 1=', inputData[0]);
-            console.log('Testo 2=', inputData[1]);
+           // console.log('Testo 1=', inputData[0]);
+           // console.log('Testo 2=', inputData[1]);
           }
           try {
-            console.log('AFFINITà da caalcolare.... ');
+           
             const affinity = await compareTexts(inputData[0], inputData[1]);
           //const affinity = await compareTexts('pirla che sei', 'pirlotto non dirlo a marzabotto');
-            console.log('AFFINITà calcolata= ',affinity);
+          //  console.log('AFFINITà calcolata= ',affinity);
+            inputData = [];
             if (typeof affinity !== "number") {
               throw new Error("Il modello ha restituito un valore non numerico.");
             }
@@ -200,15 +215,19 @@ export const resolvers: Resolvers = {
           return dataSources.listingAPI.getAmenities(id);
         }
     },
+  
+    
     Mutation: {
-      insertAssociazioneMappaControllo: async ( _,{ ID_Controllo1, ID_Controllo2 },   { dataSources }   ) => {
+      insertAssociazioneMappaControllo: async ( _,{ ID_Controllo1, ID_Controllo2, Affinita },   { dataSources }   ) => {
+        console.log("insertAssociazioneMappaControllo chiamato con Affinita=",Affinita);
         try {
-               
+      
             const mappaControlloAggiornata = 
               await dataSources.listingAPI.insertMappaControllo(
                 ID_Controllo1,
                 ID_Controllo2,
-                true
+                true,
+                Affinita
               );
               if (!mappaControlloAggiornata) {
                 throw new Error("MappaControlli non inserita.");

@@ -5,6 +5,8 @@ import path from "path";
 import { gql } from "graphql-tag";
 import { resolvers } from "./resolvers";
 import { ListingAPI } from "./datasources/listing-api";
+import { PythonAPI } from './datasources/python-api';
+
 import * as ort from "onnxruntime-node";
 
 const typeDefs = gql(
@@ -25,6 +27,7 @@ async function startApolloServer() {
       
         dataSources: {
           listingAPI: new ListingAPI({ cache }),
+          pythonAPI: new PythonAPI(),
         },
       };
     },
