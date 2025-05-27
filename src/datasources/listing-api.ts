@@ -58,6 +58,18 @@ export class ListingAPI extends RESTDataSource {
        throw error;
      });
   }
+  getListControlliById(ID_Controllo: string): Promise<Controllo[]>  {
+    // Esegui la query e stampa il risultato con then()
+     return pool.query<Controllo>('SELECT * FROM controlli WHERE "ID_Controllo" = '+ID_Controllo)
+     .then(result => {
+       console.log("Ecco le rows:", result.rows);
+       return result.rows;
+     })
+     .catch(error => {
+       console.error("Error fetching normative:", error);
+       throw error;
+     });
+  }
   
   async getListControlliByNormativa(ID_NormativaRiferimento: string): Promise<Controllo[]> {
     // Esegui la query e stampa il risultato con then()
@@ -99,10 +111,10 @@ export class ListingAPI extends RESTDataSource {
       throw error;
     });
   }
-  async listRelazioniByControllo(ID_Controllo: string): Promise<Controllo[]> {
+  async listRelazioniByControllo(ID_NormativaRiferimento: string): Promise<Controllo[]> {
     // Esegui la query e stampa il risultato con then()
 
-    return pool.query<Controllo>('SELECT * FROM controlli where "ID_NormativaRiferimento" = '+ID_Controllo)
+    return pool.query<Controllo>('SELECT * FROM controlli where "ID_NormativaRiferimento" = '+ID_NormativaRiferimento)
     .then(result => {
       //console.log("Ecco le rows:", result.rows);
       return result.rows;

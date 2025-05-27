@@ -61,11 +61,44 @@ type Amenity  {
     name: String
    
 }
-
-type Analisi {
-  verbi: [String]
-  soggetti: [String]
+type Aggettivo {
+  modifica: String
+  text: String
 }
+type Complemento {
+  testo: String
+  tipo: String
+  tipo_specifico: String
+}
+
+type Participiale {
+  testo: String
+  modifica: String
+}
+
+type Modificatori {
+  aggettivi: [Aggettivo]         # Una lista di aggettivi, es. ["fisico", "sicuro"]
+  avverbi: [String]           # Una lista di avverbi, es. ["ad esempio", "completamente"]
+  complementi: [Complemento]  # Una lista di complementi come oggetti
+  participiali: [Participiale]# Una lista di partecipiali, ognuno con "testo" e "modifica"
+  subordinate: [String]       # Una lista di subordinate (stringhe)
+}
+
+type FraseAnalizzata {
+  frase: String            # La frase ricostruita, es. "L'organizzazione ha controllato le informazioni"
+  soggetti: [String]          # Una lista di soggetti, es. ["l'organizzazione"]
+  azione: [String]            # Una lista di azioni (verbi), es. ["ha", "controllato"]
+  passive: Boolean            # Indica se la frase è passiva
+  complemento: String         # Il complemento oggetto principale, es. "informazioni"
+  agente_implicito: Boolean   # Indica se c'è un agente implicito nella frase
+  modificatori: Modificatori  # Dettagli su modificatori (aggettivi, avverbi, complementi)
+  relazioni: [String]         # Una lista di relazioni identificate nella frase
+}
+
+type AnalisiRisposta {
+  frasi: [FraseAnalizzata]    # Una lista di frasi analizzate
+}
+
 
 type SuccessResponse {
   success: Boolean!
@@ -93,7 +126,9 @@ type Mutation {
 
 type Query {
 
-  analizzaFrase(testo: String!): [Analisi]
+
+  analizzaTesto(testo: String!): AnalisiRisposta
+  #separaFrase(testo: String!): AnalisiRisposta
 
 
   predict(inputData:[String]!): Float!
@@ -103,6 +138,7 @@ type Query {
 
   listNormative:[Normativa!]!
   listControlli:[Controllo!]!
+  listControlliById(ID_Controllo:ID!):[Controllo!]!
   listControlliByNormativa(ID_NormativaRiferimento: ID!): [Controllo]!
   listControlliByNormativaDeep(ID_NormativaRiferimento: ID!,includeDeep:Boolean!,includeDesc:Boolean!): [Controllo]!
   listMappaByNormative(ID_NormativaMaster:ID!,ID_NormativaLinked: ID!): [MappaRelazione]!
