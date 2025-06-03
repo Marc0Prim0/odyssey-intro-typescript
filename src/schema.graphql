@@ -75,14 +75,34 @@ type Participiale {
   testo: String
   modifica: String
 }
-
-type Modificatori {
-  aggettivi: [Aggettivo]         # Una lista di aggettivi, es. ["fisico", "sicuro"]
-  avverbi: [String]           # Una lista di avverbi, es. ["ad esempio", "completamente"]
-  complementi: [Complemento]  # Una lista di complementi come oggetti
-  participiali: [Participiale]# Una lista di partecipiali, ognuno con "testo" e "modifica"
-  subordinate: [String]       # Una lista di subordinate (stringhe)
+# Definisci un nuovo tipo per gli avverbi complessi
+type Avverbio { # Potrebbe essere lo stesso nome del tipo Aggettivo per coerenza
+  modifica: String
+  text: String
+  tipo: String # Questo campo 'tipo' era presente nell'errore
 }
+
+# Definisci un nuovo tipo per le subordinate complesse (se necessario)
+type Subordinata { # Se la tua implementazione restituisce { testo: ..., modifica: ... }
+  testo: String
+  modifica: String
+}
+
+#type Modificatori {
+ # aggettivi: [Aggettivo]         # Una lista di aggettivi, es. ["fisico", "sicuro"]
+  #avverbi: [String]           # Una lista di avverbi, es. ["ad esempio", "completamente"]
+ # complementi: [Complemento]  # Una lista di complementi come oggetti
+  #participiali: [Participiale]# Una lista di partecipiali, ognuno con "testo" e "modifica"
+  #subordinate: [String]       # Una lista di subordinate (stringhe)
+#}
+type Modificatori {
+  aggettivi: [Aggettivo]
+  avverbi: [Avverbio] # <--- MODIFICATO! Ora è una lista di oggetti Avverbio
+  complementi: [Complemento]
+  participiali: [Participiale]
+  subordinate: [Subordinata] # <--- MODIFICATO! Ora è una lista di oggetti Subordinata
+}
+
 
 type FraseAnalizzata {
   frase: String            # La frase ricostruita, es. "L'organizzazione ha controllato le informazioni"
