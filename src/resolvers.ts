@@ -231,6 +231,55 @@ export const resolvers: Resolvers = {
           return {  success: false };
         }
       },
+      deleteAssociazioneMappaParti: async (_, { ID_Controllo1,ID_Controllo2 }, { dataSources }) => {
+        try {
+          console.log('ID_Controllo1,ID_Controllo2: '+ID_Controllo1+', '+ID_Controllo2);
+          // Logica per eliminare le righe dal database utilizzando l'ID fornito
+          let success =   await dataSources.listingAPI.deleteAssociazioneParti(ID_Controllo1,ID_Controllo2);
+          success =       await dataSources.listingAPI.deleteAssociazioneControlli(ID_Controllo1,ID_Controllo2,true);
+        
+          return { success: success  };
+        } catch (error) {
+          console.error('Errore durante l\'eliminazione della riga:', error);
+          return {  success: false };
+        }
+      },
+     insertParte: async ( _,{ ID_Controllo, Text, azioni, soggetti, complementi, Grammatica },   { dataSources }   ) => {
+        console.log("insertParte chiamato con ID_Controllo=",ID_Controllo);
+        try {
+
+            const parteAggiornata = 
+              await dataSources.listingAPI.insertParte(
+             
+                ID_Controllo,
+                Text,
+                azioni,
+                soggetti,
+                complementi,
+                Grammatica
+              );
+              if (!parteAggiornata) {
+                throw new Error("Parte non inserita.");
+              }
+              return {
+                ID_Parte: parteAggiornata.ID_Parte,
+                ID_Controllo: parteAggiornata.ID_Controllo,
+                Text: parteAggiornata.Text,
+                azioni: parteAggiornata.azioni,
+                soggetti: parteAggiornata.soggetti,
+                complementi: parteAggiornata.complementi,
+                Grammatica: parteAggiornata.Grammatica
+              };
+        } catch (error) {
+            console.error(
+                "Errore durante l'inserimento di Parte:",
+                error
+            );
+           throw error;
+        }
+
+      },
+
     
     },
     

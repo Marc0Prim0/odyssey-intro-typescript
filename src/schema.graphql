@@ -46,6 +46,15 @@ type MappaControllo {
   
 }
 
+type Parte {
+  ID_Parte:ID
+  ID_Controllo: ID!
+  Text: String
+  azioni: String
+  soggetti: String
+  complementi: String
+  Grammatica: String
+}
 
 type Listing {
   id: ID!
@@ -88,13 +97,7 @@ type Subordinata { # Se la tua implementazione restituisce { testo: ..., modific
   modifica: String
 }
 
-#type Modificatori {
- # aggettivi: [Aggettivo]         # Una lista di aggettivi, es. ["fisico", "sicuro"]
-  #avverbi: [String]           # Una lista di avverbi, es. ["ad esempio", "completamente"]
- # complementi: [Complemento]  # Una lista di complementi come oggetti
-  #participiali: [Participiale]# Una lista di partecipiali, ognuno con "testo" e "modifica"
-  #subordinate: [String]       # Una lista di subordinate (stringhe)
-#}
+
 type Modificatori {
   aggettivi: [Aggettivo]
   avverbi: [Avverbio] # <--- MODIFICATO! Ora è una lista di oggetti Avverbio
@@ -140,6 +143,26 @@ type Mutation {
     ID_Controllo1: ID!
     ID_Controllo2: ID!
     Abilitato: Boolean!
+    Affinita: String!
+  ): MappaControllo!
+  deleteAssociazioneMappaParti(
+    ID_Controllo1: ID!
+    ID_Controllo2: ID!
+  ): SuccessResponse!
+
+  insertParte(
+    ID_Parte:ID
+    ID_Controllo: ID!
+    Text: String
+    azioni: String
+    soggetti: String
+    complementi: String
+    Grammatica: String
+  ): Parte!
+  
+  insertAssociazioneMappaParti(
+    ID_Controllo1: ID!
+    ID_Controllo2: ID!
     Affinita: String!
   ): MappaControllo!
 }

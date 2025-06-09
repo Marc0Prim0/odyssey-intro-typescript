@@ -277,8 +277,90 @@ export class ListingAPI extends RESTDataSource {
       throw error;
     }
   
-
   }
+
+  async deleteAssociazioneParti(ID_Controllo1: string, ID_Controllo2: string): Promise<boolean> {
+    const client = await pool.connect(); // per usare la transazione
+    try {
+      await client.query('BEGIN');
+
+      // 1. Recupera gli ID_Parte associati a entrambi i controlli
+      const selectPartsQuery = `
+        SELECT id_parte 
+        FROM controlliparti 
+        WHERE ((id_controllo_m = $1 AND id_controllo_f = $2) 
+            OR (id_controllo_f = $1 AND id_controllo_m = $2))
+      `;
+      const partsResult = await client.query(selectPartsQuery, [ID_Controllo1, ID_Controllo2]);
+      const idsParte = partsResult.rows.map(row => row.id_parte);
+
+      if (idsParte.length > 0) {
+        // 2. Cancella i dettagli per quegli ID_Parte
+        const deleteDettagliQuery = `
+          DELETE FROM controlliparti
+          WHERE id_parte = ANY($1::uuid[])
+        `;
+        await client.query(deleteDettagliQuery, [idsParte]);
+      }
+
+      // 3. Cancella la mappatura tra i controlli
+      const deleteMappaQuery = `
+        DELETE FROM mappaparti 
+        WHERE ((id_controllo_m = $1 AND id_controllo_f = $2) 
+            OR (id_controllo_f = $1 AND id_controllo_m = $2))
+      `;
+      const mappaResult = await client.query(deleteMappaQuery, [ID_Controllo1, ID_Controllo2]);
+
+      await client.query('COMMIT');
+
+      return mappaResult.rowCount > 0;
+
+    } catch (error) {
+      await client.query('ROLLBACK');
+      console.error('Errore durante la cancellazione completa:', error);
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+   async insertParte( ID_Controllo:string, Text:string, azioni:string, soggetti:string, complementi:string, Grammatica:string) {
+    try {
+      let query =  'INSERT INTO controlliparti (id_controllo, "Text", "azioni", "soggetti", "complementi", "Grammatica") VALUES ($1, $2, $3, $4, $5, $6) RETURNING id_parte';
+      const values = [ ID_Controllo, Text, azioni, soggetti, complementi, Grammatica];
+
+
+      const result = await pool.query(query, values);
+  
+      if (result.rows.length === 0) {
+        console.log('null');
+        return null;
+      }
+     // console.log('RESULT=',result.rows[0]);
+      const row = result.rows[0];
+    
+      return {
+
+        ID_Parte: row.id_parte,
+        ID_Controllo: ID_Controllo, // Mappa id_controllo1 a ID_Controllo1
+        Text: Text,
+        azioni: azioni,
+        soggetti: soggetti, // Assicurati che questo campo sia mappato correttamente
+        complementi: complementi, // Assicurati che questo campo sia mappato correttamente
+        Grammatica: Grammatica // Assicurati che questo campo sia mappato correttamente
+
+      }
+
+    } catch (error) {
+      console.error(
+        'Errore durante l\'aggiornamento di ControlliParti nel database:',
+        error
+      );
+      throw error;
+    }
+  }
+  
+
+
 
   async getListControlliByNormativaControllo(ID_Controllo: string,ID_Normativa: string): Promise<Controllo[]> {
 
